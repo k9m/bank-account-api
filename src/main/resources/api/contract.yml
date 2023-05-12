@@ -1,0 +1,79 @@
+openapi: "3.0.2"
+info:
+  description: This is a sample server power of attorney service
+  version: 1.0.0
+  title: Power of attorney
+  license:
+    name: GNU
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /accounts:
+    put:
+      summary: Create Account
+      description: Create Account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        "201":
+          description: Account successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+
+components:
+  schemas:
+
+    ErrorObject:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+    CreateAccountRequest:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+          example: b13fd77c-6243-4b1e-9a8d-b8494f621418
+        accountType:
+          $ref: "#/components/schemas/AccountType"
+
+    Account:
+      type: object
+      properties:
+        accountNumber:
+          type: string
+          format: uuid
+          example: b13fd77c-6243-4b1e-9a8d-b8494f621418
+        balance:
+          type: number
+          format: double
+        customerId:
+          type: string
+          format: uuid
+        accountType:
+          $ref: "#/components/schemas/AccountType"
+        created:
+          type: string
+          format: date
+
+    AccountType:
+      type: string
+      enum:
+        - SAVINGS
