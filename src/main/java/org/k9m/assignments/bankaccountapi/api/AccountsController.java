@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -19,13 +19,18 @@ public class AccountsController implements AccountsApi{
     private final AccountRepository accountRepository;
 
     @Override
-    public ResponseEntity<AccountDTO> createAccount(CreateAccountRequestDTO createAccountRequestDTO) {
+    public ResponseEntity<AccountDTO> createAccount(CreateAccountRequestDTO createAccountRequest) {
         return new ResponseEntity<>(accountRepository.save(
                 new Account()
-                        .setCustomerId(createAccountRequestDTO.getCustomerId())
-                        .setAccountType(createAccountRequestDTO.getAccountType().toString())
+                        .setCustomerId(createAccountRequest.getCustomerId())
+                        .setAccountType(createAccountRequest.getAccountType().toString())
                         .setBalance(0.0)
-                        .setCreated(LocalDate.now()))
+                        .setCreated(createAccountRequest.getCreated()))
                 .toApiModel(), HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<AccountDTO> getAccount(UUID id) {
+        return ResponseEntity.ok(accountRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Couldn't find ACCOUNT with id: " + id)).toApiModel());
     }
 }

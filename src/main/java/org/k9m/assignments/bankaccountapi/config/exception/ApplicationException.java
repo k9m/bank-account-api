@@ -15,7 +15,9 @@ public class ApplicationException extends RuntimeException {
     }
 
     public ErrorObjectDTO toError() {
-        return new ErrorObjectDTO().statusCode(statusCode.value()).message(getMessage());
+        return new ErrorObjectDTO()
+                .statusCode(statusCode.value())
+                .message(getMessage());
     }
 
 }

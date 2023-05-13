@@ -27,6 +27,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Account"
+  /accounts/{id}:
+    get:
+      summary: Get Detail of an Account
+      description: Get Detail of an Account
+      operationId: getAccount
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorObject"
 
 
 components:
@@ -53,6 +78,9 @@ components:
           example: b13fd77c-6243-4b1e-9a8d-b8494f621418
         accountType:
           $ref: "#/components/schemas/AccountType"
+        created:
+          type: string
+          format: date
 
     Account:
       type: object
