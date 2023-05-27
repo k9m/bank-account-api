@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
 import org.k9m.assignments.bankaccountapi.api.model.CreateAccountRequestDTO;
 import org.k9m.assignments.bankaccountapi.api.model.DepositRequestDTO;
+import org.k9m.assignments.bankaccountapi.api.model.WithdrawRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Scope;
@@ -60,9 +61,17 @@ public class TestClient {
 
     public ResponseEntity<AccountDTO> deposit(UUID accountNumber, DepositRequestDTO depositRequest){
         return restTemplate.exchange(
-                "/accounts/" + accountNumber,
+                "/accounts/" + accountNumber + "/deposit",
                 HttpMethod.POST,
                 new HttpEntity<>(depositRequest, new HttpHeaders()),
+                AccountDTO.class,
+                Collections.emptyMap());
+    }
+    public ResponseEntity<AccountDTO> withdraw(UUID accountNumber, WithdrawRequestDTO withdrawRequest){
+        return restTemplate.exchange(
+                "/accounts/" + accountNumber + "/withdraw",
+                HttpMethod.POST,
+                new HttpEntity<>(withdrawRequest, new HttpHeaders()),
                 AccountDTO.class,
                 Collections.emptyMap());
     }

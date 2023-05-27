@@ -50,7 +50,7 @@ Feature: Deposit money onto account
     Then this error should be returned
     """
     {
-      "message": "must be greater than or equal to 0.0",
+      "message": "Field error in object 'depositRequestDTO' on field 'amount' must be greater than or equal to 0.0",
       "statusCode": 400
     }
     """

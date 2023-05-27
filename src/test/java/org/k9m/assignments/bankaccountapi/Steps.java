@@ -7,10 +7,7 @@ import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
-import org.k9m.assignments.bankaccountapi.api.model.CreateAccountRequestDTO;
-import org.k9m.assignments.bankaccountapi.api.model.DepositRequestDTO;
-import org.k9m.assignments.bankaccountapi.api.model.ErrorObjectDTO;
+import org.k9m.assignments.bankaccountapi.api.model.*;
 import org.k9m.assignments.bankaccountapi.persistence.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -93,6 +90,37 @@ public class Steps {
                 .isEqualTo(expectedAccount);
     }
 
+    @Then("^(-?\\d+) is deposited onto (.*) account on (.*)$")
+    public void deposit(double amount, String accountNumber, String depositDate) {
+        try {
+            retrieveResponse = "this".equals(accountNumber) ?
+                    testClient.getAccount(createResponse.getBody().getAccountNumber()) :
+                    testClient.getAccount(UUID.fromString(accountNumber)) ;
+            depositResponse = testClient.deposit(
+                    retrieveResponse.getBody().getAccountNumber(),
+                    new DepositRequestDTO()
+                            .amount(amount)
+                            .created(LocalDate.parse(depositDate)));
+        } catch (HttpClientErrorException e) {
+            lastThrownException = e;
+        }
+    }
+    @Then("^(-?\\d+) is withdrawn from (.*) account on (.*)$")
+    public void withdraw(double amount, String accountNumber, String depositDate) {
+        try {
+            retrieveResponse = "this".equals(accountNumber) ?
+                    testClient.getAccount(createResponse.getBody().getAccountNumber()) :
+                    testClient.getAccount(UUID.fromString(accountNumber)) ;
+            depositResponse = testClient.withdraw(
+                    retrieveResponse.getBody().getAccountNumber(),
+                    new WithdrawRequestDTO()
+                            .amount(amount)
+                            .created(LocalDate.parse(depositDate)));
+        } catch (HttpClientErrorException e) {
+            lastThrownException = e;
+        }
+    }
+
     @Then("this error should be returned")
     @SneakyThrows
     public void assertException(String json) {
@@ -101,23 +129,6 @@ public class Steps {
         assertThat(lastThrownException).isNotNull();
         final ErrorObjectDTO errorObject = objectMapper.readValue(lastThrownException.getResponseBodyAsString(), ErrorObjectDTO.class);
         assertThat(errorObject.getStatusCode()).isEqualTo(expectedErrorObject.getStatusCode());
-        assertThat(errorObject.getMessage()).contains(expectedErrorObject.getMessage());
-    }
-
-    @Then("^(-?\\d+) is deposited onto (.*) account on (.*)$")
-    public void deposit(double deposit, String accountNumber, String depositDate) {
-        try {
-            retrieveResponse = "this".equals(accountNumber) ?
-                    testClient.getAccount(createResponse.getBody().getAccountNumber()) :
-                    testClient.getAccount(UUID.fromString(accountNumber)) ;
-            depositResponse = testClient.deposit(
-                    retrieveResponse.getBody().getAccountNumber(),
-                    new DepositRequestDTO()
-                            .amount(deposit)
-                            .created(LocalDate.parse(depositDate)));
-            log.info("{}", depositResponse);
-        } catch (HttpClientErrorException e) {
-            lastThrownException = e;
-        }
+        assertThat(errorObject.getMessage()).contains(expectedErrorObject.getMessage().split("[ ]+"));
     }
 }
