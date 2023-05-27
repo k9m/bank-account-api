@@ -2,6 +2,7 @@ Feature: Read Balance
 
   Background:
     Given the system has started up
+    Given the database is clear
 
   Scenario: Create an account for a customer then read the balance
     When an account is created with these details
@@ -13,7 +14,8 @@ Feature: Read Balance
       "created": "2023-05-25"
     }
     """
-    When this account is retrieved, then below response should be returned
+    When this account is retrieved
+    Then below response should be returned
     """
     {
       "balance": 0.0,
@@ -22,7 +24,10 @@ Feature: Read Balance
       "created": "2023-05-25"
     }
     """
-    When a wrong account is retrieved this error should be returned
+
+  Scenario: An account that doesn't exist is getting retrieved
+    When e58ed763-928c-4155-bee9-fdbaaadc15f3 account is retrieved
+    Then this error should be returned
     """
     {
       "message": "Couldn't find ACCOUNT with id: e58ed763-928c-4155-bee9-fdbaaadc15f3",

@@ -27,10 +27,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Account"
+
   /accounts/{id}:
     get:
-      summary: Get Detail of an Account
-      description: Get Detail of an Account
+      summary: Get Details of an Account
+      description: Get Details of an Account
       operationId: getAccount
       parameters:
         - in: path
@@ -42,6 +43,37 @@ paths:
       responses:
         "200":
           description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorObject"
+
+    post:
+      summary: Get Detail of an Account
+      description: Get Detail of an Account
+      operationId: deposit
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        "200":
+          description: Money Deposited
           content:
             application/json:
               schema:
@@ -71,6 +103,10 @@ components:
 
     CreateAccountRequest:
       type: object
+      required:
+        - customerId
+        - accountType
+        - created
       properties:
         customerId:
           type: string
@@ -82,8 +118,29 @@ components:
           type: string
           format: date
 
+    DepositRequest:
+      type: object
+      required:
+        - customerId
+        - amount
+        - created
+      properties:
+        amount:
+          type: number
+          format: double
+          minimum: 0.0
+        created:
+          type: string
+          format: date
+
     Account:
       type: object
+      required:
+        - accountNumber
+        - balance
+        - customerId
+        - accountType
+        - created
       properties:
         accountNumber:
           type: string

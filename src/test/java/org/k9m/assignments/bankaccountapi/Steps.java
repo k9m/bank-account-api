@@ -9,13 +9,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
 import org.k9m.assignments.bankaccountapi.api.model.CreateAccountRequestDTO;
+import org.k9m.assignments.bankaccountapi.api.model.DepositRequestDTO;
 import org.k9m.assignments.bankaccountapi.api.model.ErrorObjectDTO;
-import org.k9m.assignments.bankaccountapi.config.exception.ApplicationException;
+import org.k9m.assignments.bankaccountapi.persistence.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,14 +34,23 @@ public class Steps {
     private TestClient testClient;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private AccountRepository accountRepository;
 
     private ResponseEntity<AccountDTO> createResponse;
 
-    private ApplicationException lastThrownException;
+    private ResponseEntity<AccountDTO> retrieveResponse;
+    private ResponseEntity<AccountDTO> depositResponse;
+    private HttpClientErrorException lastThrownException;
 
     @Given("the system has started up")
     public void systemStart() {
         assertThat(testClient.healthCheck()).contains("UP");
+    }
+
+    @Given("the database is clear")
+    public void theDatabaseIsClear() {
+        accountRepository.deleteAll();
     }
 
     @When("an account is created with these details")
@@ -51,7 +63,7 @@ public class Steps {
 
     @Then("^the response should be code (\\d+) with below body$")
     @SneakyThrows
-    public void createAccount(int responseCode, String json) {
+    public void assertCreateResponse(int responseCode, String json) {
         var expectedAccount = objectMapper.readValue(json, AccountDTO.class);
         assertThat(createResponse.getStatusCode().value()).isEqualTo(responseCode);
         assertThat(createResponse.getBody())
@@ -60,29 +72,52 @@ public class Steps {
                 .isEqualTo(expectedAccount);
     }
 
-    @When("this account is retrieved, then below response should be returned")
+    @When("^(.*) account is retrieved$")
     @SneakyThrows
-    public void retrieveLastSavedAccount(String json) {
+    public void retrieveAccount(String accountNumber) {
+        try {
+            retrieveResponse = "this".equals(accountNumber) ?
+                    testClient.getAccount(createResponse.getBody().getAccountNumber()) :
+                    testClient.getAccount(UUID.fromString(accountNumber)) ;
+        } catch (HttpClientErrorException e) {
+            lastThrownException = e;
+        }
+    }
+    @Then("below response should be returned")
+    @SneakyThrows
+    public void assertRetrievedAccount(String json) {
         var expectedAccount = objectMapper.readValue(json, AccountDTO.class);
-        var retrievedAccount = testClient.getAccount(createResponse.getBody().getAccountNumber());
-        assertThat(retrievedAccount.getBody())
+        assertThat(retrieveResponse.getBody())
                 .usingRecursiveComparison()
                 .ignoringFields("accountNumber")
                 .isEqualTo(expectedAccount);
     }
 
-    @When("a wrong account is retrieved this error should be returned")
+    @Then("this error should be returned")
     @SneakyThrows
-    public void lastThrownException(String json) {
+    public void assertException(String json) {
         var expectedErrorObject = objectMapper.readValue(json, ErrorObjectDTO.class);
+
+        assertThat(lastThrownException).isNotNull();
+        final ErrorObjectDTO errorObject = objectMapper.readValue(lastThrownException.getResponseBodyAsString(), ErrorObjectDTO.class);
+        assertThat(errorObject.getStatusCode()).isEqualTo(expectedErrorObject.getStatusCode());
+        assertThat(errorObject.getMessage()).contains(expectedErrorObject.getMessage());
+    }
+
+    @Then("^(-?\\d+) is deposited onto (.*) account on (.*)$")
+    public void deposit(double deposit, String accountNumber, String depositDate) {
         try {
-            var retrievedAccount = testClient.getAccount(UUID.fromString("e58ed763-928c-4155-bee9-fdbaaadc15f3"));
-            log.info("Account created: {}", retrievedAccount.getBody());
-        } catch (ApplicationException e) {
+            retrieveResponse = "this".equals(accountNumber) ?
+                    testClient.getAccount(createResponse.getBody().getAccountNumber()) :
+                    testClient.getAccount(UUID.fromString(accountNumber)) ;
+            depositResponse = testClient.deposit(
+                    retrieveResponse.getBody().getAccountNumber(),
+                    new DepositRequestDTO()
+                            .amount(deposit)
+                            .created(LocalDate.parse(depositDate)));
+            log.info("{}", depositResponse);
+        } catch (HttpClientErrorException e) {
             lastThrownException = e;
         }
-        assertThat(lastThrownException).isNotNull();
-        assertThat(expectedErrorObject.getStatusCode()).isEqualTo(lastThrownException.getStatusCode().value());
-        assertThat(expectedErrorObject.getMessage()).isEqualTo(lastThrownException.getMessage());
     }
 }

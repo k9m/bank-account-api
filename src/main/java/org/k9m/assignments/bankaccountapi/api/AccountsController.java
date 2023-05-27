@@ -3,6 +3,7 @@ package org.k9m.assignments.bankaccountapi.api;
 import lombok.RequiredArgsConstructor;
 import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
 import org.k9m.assignments.bankaccountapi.api.model.CreateAccountRequestDTO;
+import org.k9m.assignments.bankaccountapi.api.model.DepositRequestDTO;
 import org.k9m.assignments.bankaccountapi.persistence.AccountRepository;
 import org.k9m.assignments.bankaccountapi.persistence.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,18 @@ public class AccountsController implements AccountsApi{
 
     @Override
     public ResponseEntity<AccountDTO> getAccount(UUID id) {
-        return ResponseEntity.ok(accountRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Couldn't find ACCOUNT with id: " + id)).toApiModel());
+        return ResponseEntity.ok(findAccount(id).toApiModel());
+    }
+    @Override
+    public ResponseEntity<AccountDTO> deposit(UUID id, DepositRequestDTO depositRequestDTO) {
+        var account = findAccount(id);
+        account.setBalance(account.getBalance() + depositRequestDTO.getAmount());
+        accountRepository.save(account);
+
+        return ResponseEntity.ok(account.toApiModel());
+    }
+
+    private Account findAccount(UUID id) {
+        return accountRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Couldn't find ACCOUNT with id: " + id));
     }
 }

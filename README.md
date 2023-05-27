@@ -8,9 +8,9 @@ Banking. We would like to use Micro Service architecture to replace the monolith
 The system is supposed to contain the following functionalities:
 
 * ~~Create a Savings Account for the Customer~~
-* Deposit money to Account
+* ~~Deposit money to Account~~
 * Withdraw money from Account
-* Read available balance
+* ~~Read available balance~~
 * List last 10 transactions of the Account
 
 

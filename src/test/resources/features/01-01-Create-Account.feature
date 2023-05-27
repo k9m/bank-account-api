@@ -2,6 +2,7 @@ Feature: Create Account
 
   Background:
     Given the system has started up
+    Given the database is clear
 
   Scenario: Create an account for a customer
     When an account is created with these details
