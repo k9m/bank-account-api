@@ -118,6 +118,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorObject"
 
+  /accounts/{id}/transactions:
+    get:
+      summary: List transactions
+      description:  List transactions
+      operationId: transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transactions"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorObject"
+
 
 components:
   schemas:
@@ -195,6 +221,9 @@ components:
         balance:
           type: number
           format: double
+        lastTransactionAmount:
+          type: number
+          format: double
         customerId:
           type: string
           format: uuid
@@ -203,6 +232,33 @@ components:
         created:
           type: string
           format: date
+
+    Transactions:
+      type: object
+      required:
+        - accountNumber
+      properties:
+        accountNumber:
+          type: string
+          format: uuid
+          example: b13fd77c-6243-4b1e-9a8d-b8494f621418
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+
+    Transaction:
+      type: object
+      required:
+        - balance
+        - created
+      properties:
+        balance:
+          type: number
+          format: double
+        transactionAmount:
+          type: number
+          format: double
 
     AccountType:
       type: string

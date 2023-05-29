@@ -6,7 +6,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.k9m.assignments.bankaccountapi.api.model.*;
 import org.k9m.assignments.bankaccountapi.persistence.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @CucumberContextConfiguration
 @ActiveProfiles("test")
@@ -37,7 +35,8 @@ public class Steps {
     private ResponseEntity<AccountDTO> createResponse;
 
     private ResponseEntity<AccountDTO> retrieveResponse;
-    private ResponseEntity<AccountDTO> depositResponse;
+
+    private ResponseEntity<TransactionsDTO> transactionResponse;
     private HttpClientErrorException lastThrownException;
 
     @Given("the system has started up")
@@ -55,7 +54,6 @@ public class Steps {
     public void createAccount(String json) {
         var createRequest = objectMapper.readValue(json, CreateAccountRequestDTO.class);
         createResponse = testClient.createAccount(createRequest);
-        log.info("Account created: {}", createResponse.getBody());
     }
 
     @Then("^the response should be code (\\d+) with below body$")
@@ -80,7 +78,7 @@ public class Steps {
             lastThrownException = e;
         }
     }
-    @Then("below response should be returned")
+    @Then("below response should be returned by read balance endpoint")
     @SneakyThrows
     public void assertRetrievedAccount(String json) {
         var expectedAccount = objectMapper.readValue(json, AccountDTO.class);
@@ -96,7 +94,7 @@ public class Steps {
             retrieveResponse = "this".equals(accountNumber) ?
                     testClient.getAccount(createResponse.getBody().getAccountNumber()) :
                     testClient.getAccount(UUID.fromString(accountNumber)) ;
-            depositResponse = testClient.deposit(
+            testClient.deposit(
                     retrieveResponse.getBody().getAccountNumber(),
                     new DepositRequestDTO()
                             .amount(amount)
@@ -111,7 +109,7 @@ public class Steps {
             retrieveResponse = "this".equals(accountNumber) ?
                     testClient.getAccount(createResponse.getBody().getAccountNumber()) :
                     testClient.getAccount(UUID.fromString(accountNumber)) ;
-            depositResponse = testClient.withdraw(
+            testClient.withdraw(
                     retrieveResponse.getBody().getAccountNumber(),
                     new WithdrawRequestDTO()
                             .amount(amount)
@@ -130,5 +128,26 @@ public class Steps {
         final ErrorObjectDTO errorObject = objectMapper.readValue(lastThrownException.getResponseBodyAsString(), ErrorObjectDTO.class);
         assertThat(errorObject.getStatusCode()).isEqualTo(expectedErrorObject.getStatusCode());
         assertThat(errorObject.getMessage()).contains(expectedErrorObject.getMessage().split("[ ]+"));
+    }
+
+    @When("^the last transactions are retrieved for (.*) account$")
+    public void listTransactions(String accountNumber) {
+        try {
+            transactionResponse = "this".equals(accountNumber) ?
+                    testClient.getTransactions(createResponse.getBody().getAccountNumber()) :
+                    testClient.getTransactions(UUID.fromString(accountNumber)) ;
+        } catch (HttpClientErrorException e) {
+            lastThrownException = e;
+        }
+    }
+
+    @Then("below response should be returned by list transactions endpoint")
+    @SneakyThrows
+    public void assertListedTransactions(String json) {
+        var expectedTransactions = objectMapper.readValue(json, TransactionsDTO.class);
+        assertThat(transactionResponse.getBody())
+                .usingRecursiveComparison()
+                .ignoringFields("accountNumber")
+                .isEqualTo(expectedTransactions);
     }
 }

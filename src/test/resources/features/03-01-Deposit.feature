@@ -16,10 +16,11 @@ Feature: Deposit money onto account
     """
     Then 100 is deposited onto this account on 2023-05-26
     When this account is retrieved
-    Then below response should be returned
+    Then below response should be returned by read balance endpoint
     """
     {
       "balance": 100.0,
+      "lastTransactionAmount": 100.0,
       "customerId": "b13fd77c-6243-4b1e-9a8d-b8494f621418",
       "accountType": "SAVINGS",
       "created": "2023-05-25"

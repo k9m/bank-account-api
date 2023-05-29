@@ -3,11 +3,7 @@ package org.k9m.assignments.bankaccountapi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import lombok.SneakyThrows;
-import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
-import org.k9m.assignments.bankaccountapi.api.model.CreateAccountRequestDTO;
-import org.k9m.assignments.bankaccountapi.api.model.DepositRequestDTO;
-import org.k9m.assignments.bankaccountapi.api.model.WithdrawRequestDTO;
+import org.k9m.assignments.bankaccountapi.api.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Scope;
@@ -54,7 +50,6 @@ public class TestClient {
                 Collections.emptyMap());
     }
 
-    @SneakyThrows
     public ResponseEntity<AccountDTO> getAccount(UUID id){
         return restTemplate.getForEntity( "/accounts/{id}", AccountDTO.class, id);
     }
@@ -74,6 +69,10 @@ public class TestClient {
                 new HttpEntity<>(withdrawRequest, new HttpHeaders()),
                 AccountDTO.class,
                 Collections.emptyMap());
+    }
+
+    public ResponseEntity<TransactionsDTO> getTransactions(UUID id){
+        return restTemplate.getForEntity( "/accounts/{id}/transactions", TransactionsDTO.class, id);
     }
 
 }

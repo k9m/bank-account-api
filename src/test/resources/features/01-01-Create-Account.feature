@@ -17,6 +17,7 @@ Feature: Create Account
     """
     {
       "balance": 0.0,
+      "lastTransactionAmount": 0.0,
       "customerId": "b13fd77c-6243-4b1e-9a8d-b8494f621418",
       "accountType": "SAVINGS",
       "created": "2023-05-25"

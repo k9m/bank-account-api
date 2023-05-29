@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.val;
+import org.hibernate.envers.Audited;
 import org.k9m.assignments.bankaccountapi.api.model.AccountDTO;
 import org.k9m.assignments.bankaccountapi.api.model.AccountTypeDTO;
 import org.springframework.beans.BeanUtils;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @Entity(name = "accounts")
 @Data
+@Audited
 public class Account {
 
   @Id
@@ -22,6 +24,8 @@ public class Account {
   private UUID accountNumber;
 
   private Double balance;
+
+  private Double lastTransactionAmount;
 
   private UUID customerId;
 

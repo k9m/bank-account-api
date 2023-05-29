@@ -31,6 +31,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+	implementation("org.hibernate:hibernate-envers:6.2.3.Final")
 
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")

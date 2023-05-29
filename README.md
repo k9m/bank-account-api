@@ -11,7 +11,7 @@ The system is supposed to contain the following functionalities:
 * ~~Deposit money to Account~~
 * ~~Withdraw money from Account~~
 * ~~Read available balance~~
-* List last 10 transactions of the Account
+* ~~List last 10 transactions of the Account~~
 
 
 ## Requirements
@@ -35,3 +35,23 @@ development phase.
 
 * How will you design/organize the micro services for your API product?
 * How will you break down the business requirements into user stories?
+
+## Run Guide:
+
+- The API models and interfaces are generated via the build
+- Contract can be found in `src/main/resources/api/contract.yml`
+
+### 1. Build the project first
+This will generate the API models, build the artifact and test the project
+```console
+gradlew clean build
+```
+This will regenerate the API models only
+```console
+gradlew clean compileJava
+```
+
+### 2. Start as a standard Spring Boot application and
+1. [Try the API via the Swagger UI](http://localhost:8080/swagger-ui/index.html)
+2. Import `src/main/resources/api/contract.yml` into Postman
+
